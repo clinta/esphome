@@ -112,6 +112,30 @@ class ThermostatClimate : public climate::Climate, public Component {
   void set_heating_minimum_run_time_in_sec(uint32_t time);
   void set_idle_minimum_time_in_sec(uint32_t time);
   void set_sensor(sensor::Sensor *sensor);
+
+  /// Start specific timers manually
+  void start_cooling_maximum_run_time_timer();
+  void start_cooling_minimum_off_timer();
+  void start_cooling_minimum_on_timer();
+  void start_fan_mode_timer();
+  void start_fanning_minimum_off_timer();
+  void start_fanning_minimum_on_timer();
+  void start_heating_maximum_run_time_timer();
+  void start_heating_minimum_off_timer();
+  void start_heating_minimum_on_timer();
+  void start_idle_minimum_timer();
+
+  /// Stop specific timers manually
+  void stop_cooling_maximum_run_time_timer();
+  void stop_cooling_minimum_off_timer();
+  void stop_cooling_minimum_on_timer();
+  void stop_fan_mode_timer();
+  void stop_fanning_minimum_off_timer();
+  void stop_fanning_minimum_on_timer();
+  void stop_heating_maximum_run_time_timer();
+  void stop_heating_minimum_off_timer();
+  void stop_heating_minimum_on_timer();
+  void stop_idle_minimum_timer();
   void set_humidity_sensor(sensor::Sensor *humidity_sensor);
   void set_humidity_hysteresis(float humidity_hysteresis);
   void set_use_startup_delay(bool use_startup_delay);
