@@ -1707,4 +1707,108 @@ ThermostatClimateTargetTempConfig::ThermostatClimateTargetTempConfig(float defau
                                                                      float default_temperature_high)
     : default_temperature_low(default_temperature_low), default_temperature_high(default_temperature_high) {}
 
+// Public timer start methods
+void ThermostatClimate::start_cooling_maximum_run_time_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_COOLING_MAX_RUN_TIME) > 0) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_COOLING_MAX_RUN_TIME);
+  }
+}
+
+void ThermostatClimate::start_cooling_minimum_off_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_COOLING_OFF) > 0 &&
+      this->action != climate::CLIMATE_ACTION_COOLING) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_COOLING_OFF);
+  }
+}
+
+void ThermostatClimate::start_cooling_minimum_on_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_COOLING_ON) > 0 &&
+      this->action == climate::CLIMATE_ACTION_COOLING) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_COOLING_ON);
+  }
+}
+
+void ThermostatClimate::start_fan_mode_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_FAN_MODE) > 0) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_FAN_MODE);
+  }
+}
+
+void ThermostatClimate::start_fanning_minimum_off_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_FANNING_OFF) > 0 &&
+      this->action != climate::CLIMATE_ACTION_FAN) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_FANNING_OFF);
+  }
+}
+
+void ThermostatClimate::start_fanning_minimum_on_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_FANNING_ON) > 0 &&
+      this->action == climate::CLIMATE_ACTION_FAN) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_FANNING_ON);
+  }
+}
+
+void ThermostatClimate::start_heating_maximum_run_time_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_HEATING_MAX_RUN_TIME) > 0) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_HEATING_MAX_RUN_TIME);
+  }
+}
+
+void ThermostatClimate::start_heating_minimum_off_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_HEATING_OFF) > 0 &&
+      this->action != climate::CLIMATE_ACTION_HEATING) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_HEATING_OFF);
+  }
+}
+
+void ThermostatClimate::start_heating_minimum_on_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_HEATING_ON) > 0 &&
+      this->action == climate::CLIMATE_ACTION_HEATING) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_HEATING_ON);
+  }
+}
+
+void ThermostatClimate::start_idle_minimum_timer() {
+  if (this->timer_duration_(thermostat::THERMOSTAT_TIMER_IDLE_ON) > 0 && this->action == climate::CLIMATE_ACTION_IDLE) {
+    this->start_timer_(thermostat::THERMOSTAT_TIMER_IDLE_ON);
+  }
+}
+
+// Public timer stop methods
+void ThermostatClimate::stop_cooling_maximum_run_time_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_COOLING_MAX_RUN_TIME);
+}
+
+void ThermostatClimate::stop_cooling_minimum_off_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_COOLING_OFF);
+}
+
+void ThermostatClimate::stop_cooling_minimum_on_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_COOLING_ON);
+}
+
+void ThermostatClimate::stop_fan_mode_timer() { this->cancel_timer_(thermostat::THERMOSTAT_TIMER_FAN_MODE); }
+
+void ThermostatClimate::stop_fanning_minimum_off_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_FANNING_OFF);
+}
+
+void ThermostatClimate::stop_fanning_minimum_on_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_FANNING_ON);
+}
+
+void ThermostatClimate::stop_heating_maximum_run_time_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_HEATING_MAX_RUN_TIME);
+}
+
+void ThermostatClimate::stop_heating_minimum_off_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_HEATING_OFF);
+}
+
+void ThermostatClimate::stop_heating_minimum_on_timer() {
+  this->cancel_timer_(thermostat::THERMOSTAT_TIMER_HEATING_ON);
+}
+
+void ThermostatClimate::stop_idle_minimum_timer() { this->cancel_timer_(thermostat::THERMOSTAT_TIMER_IDLE_ON); }
+
 }  // namespace esphome::thermostat
