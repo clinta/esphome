@@ -214,6 +214,72 @@ Trigger<> *BangBangClimate::get_heat_trigger() { return &this->heat_trigger_; }
 void BangBangClimate::set_supports_cool(bool supports_cool) { this->supports_cool_ = supports_cool; }
 void BangBangClimate::set_supports_heat(bool supports_heat) { this->supports_heat_ = supports_heat; }
 
+bool BangBangClimate::is_temperature_in_comfort_zone() {
+  if (this->mode == climate::CLIMATE_MODE_OFF) {
+    return false;
+  }
+  if (std::isnan(this->current_temperature) || std::isnan(this->target_temperature_low) ||
+      std::isnan(this->target_temperature_high)) {
+    return false;
+  }
+
+  const bool too_cold = this->current_temperature < this->target_temperature_low;
+  const bool too_hot = this->current_temperature > this->target_temperature_high;
+
+  if (this->mode == climate::CLIMATE_MODE_HEAT_COOL) {
+    return !too_cold && !too_hot;
+  }
+  if (this->mode == climate::CLIMATE_MODE_HEAT && this->supports_heat_) {
+    return !too_cold;
+  }
+  if (this->mode == climate::CLIMATE_MODE_COOL && this->supports_cool_) {
+    return !too_hot;
+  }
+
+  return false;
+}
+
+void BangBangClimate::apply_requested_action_(climate::ClimateAction action) {
+  // Only act if in comfort zone
+  if (!this->is_temperature_in_comfort_zone()) {
+    return;
+  }
+
+  // Universal no-op check
+  if (this->action == action) {
+    return;
+  }
+
+  switch (action) {
+    case climate::CLIMATE_ACTION_HEATING:
+      if (!this->supports_heat_ ||
+          (this->mode != climate::CLIMATE_MODE_HEAT && this->mode != climate::CLIMATE_MODE_HEAT_COOL)) {
+        return;
+      }
+      this->switch_to_action_(climate::CLIMATE_ACTION_HEATING);
+      break;
+
+    case climate::CLIMATE_ACTION_COOLING:
+      if (!this->supports_cool_ ||
+          (this->mode != climate::CLIMATE_MODE_COOL && this->mode != climate::CLIMATE_MODE_HEAT_COOL)) {
+        return;
+      }
+      this->switch_to_action_(climate::CLIMATE_ACTION_COOLING);
+      break;
+
+    case climate::CLIMATE_ACTION_IDLE:
+      this->switch_to_action_(climate::CLIMATE_ACTION_IDLE);
+      break;
+
+    case climate::CLIMATE_ACTION_OFF:
+      this->switch_to_action_(climate::CLIMATE_ACTION_OFF);
+      break;
+
+    default:
+      break;
+  }
+}
+
 void BangBangClimate::dump_config() {
   LOG_CLIMATE("", "Bang Bang Climate", this);
   ESP_LOGCONFIG(TAG,

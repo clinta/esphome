@@ -263,6 +263,22 @@ class Climate : public EntityBase {
   /// Check if a custom preset is currently active.
   bool has_custom_preset() const { return this->custom_preset_ != nullptr; }
 
+  /** Request a specific climate action immediately.
+   *
+   * This requests the climate device to switch to the specified action, subject
+   * to validation checks. If conditions don't support the action (temperature
+   * outside comfort zone, mode doesn't support it, timers blocking, etc.),
+   * the request is silently ignored.
+   *
+   * Unlike make_call().perform() which goes through the control() method, this
+   * directly triggers the action for immediate effect. The climate controller will
+   * continue to monitor temperature and will naturally switch to IDLE/COOLING/HEATING
+   * as appropriate on subsequent sensor updates.
+   *
+   * @param action The action to request (HEATING, COOLING, IDLE, or OFF).
+   */
+  void request_action(ClimateAction action);
+
   /// The current temperature of the climate device, as reported from the integration.
   float current_temperature{NAN};
 
@@ -307,6 +323,19 @@ class Climate : public EntityBase {
  protected:
   friend ClimateCall;
   friend struct ClimateDeviceRestoreState;
+
+  /** Check if current temperature is in comfort zone.
+   *
+   * Returns true if current temperature is within acceptable range for current
+   * climate mode. This is useful for conditional logic before requesting actions.
+   */
+  virtual bool is_temperature_in_comfort_zone() { return false; }
+
+  /** Apply a requested action with validation (used by request_action).
+   *
+   * Default implementation does nothing - derived classes must override.
+   */
+  virtual void apply_requested_action_(ClimateAction action) {}
 
   /// Set fan mode. Reset custom fan mode. Return true if fan mode has been changed.
   bool set_fan_mode_(ClimateFanMode mode);

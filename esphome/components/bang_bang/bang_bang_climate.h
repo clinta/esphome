@@ -35,6 +35,9 @@ class BangBangClimate : public climate::Climate, public Component {
   Trigger<> *get_heat_trigger();
 
  protected:
+  bool is_temperature_in_comfort_zone() override;
+  void apply_requested_action_(climate::ClimateAction action) override;
+
   /// Override control to change settings of the climate device.
   void control(const climate::ClimateCall &call) override;
   /// Change the away setting, will reset target temperatures to defaults.

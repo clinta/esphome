@@ -794,4 +794,9 @@ void Climate::dump_traits_(const char *tag) {
   }
 }
 
+void Climate::request_action(ClimateAction action) {
+  this->apply_requested_action_(action);
+  this->publish_state();
+}
+
 }  // namespace esphome::climate
