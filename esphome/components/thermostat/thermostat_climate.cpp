@@ -89,8 +89,91 @@ void ThermostatClimate::refresh() {
   this->switch_to_swing_mode_(this->swing_mode, false);
   this->switch_to_humidity_control_action_(this->compute_humidity_control_action_());
   this->check_humidity_change_trigger_();
-  this->check_temperature_change_trigger_();
   this->publish_state();
+}
+
+bool ThermostatClimate::is_temperature_in_comfort_zone() {
+  if (this->mode == climate::CLIMATE_MODE_OFF) {
+    return false;
+  }
+  if (std::isnan(this->current_temperature) || !this->hysteresis_valid()) {
+    return false;
+  }
+
+  if (this->mode == climate::CLIMATE_MODE_HEAT || this->mode == climate::CLIMATE_MODE_HEAT_COOL ||
+      this->mode == climate::CLIMATE_MODE_AUTO) {
+    if (this->supports_heat_) {
+      auto temp = this->supports_two_points_ ? this->target_temperature_low : this->target_temperature;
+      if (this->current_temperature < temp - this->heating_deadband_ ||
+          this->current_temperature > temp + this->heating_overrun_) {
+        return false;
+      }
+    }
+  }
+
+  if (this->mode == climate::CLIMATE_MODE_COOL || this->mode == climate::CLIMATE_MODE_HEAT_COOL ||
+      this->mode == climate::CLIMATE_MODE_AUTO) {
+    if (this->supports_cool_) {
+      auto temp = this->supports_two_points_ ? this->target_temperature_high : this->target_temperature;
+      if (this->current_temperature < temp - this->cooling_overrun_ ||
+          this->current_temperature > temp + this->cooling_deadband_) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+void ThermostatClimate::apply_requested_action_(climate::ClimateAction action) {
+  // Only act if in comfort zone
+  if (!this->is_temperature_in_comfort_zone()) {
+    return;
+  }
+
+  // Universal no-op check
+  if (this->action == action) {
+    return;
+  }
+
+  switch (action) {
+    case climate::CLIMATE_ACTION_HEATING:
+      if (!this->supports_heat_ ||
+          (this->mode != climate::CLIMATE_MODE_HEAT && this->mode != climate::CLIMATE_MODE_HEAT_COOL &&
+           this->mode != climate::CLIMATE_MODE_AUTO) ||
+          !this->heating_action_ready_()) {
+        return;
+      }
+      this->switch_to_action_(climate::CLIMATE_ACTION_HEATING, true);
+      break;
+
+    case climate::CLIMATE_ACTION_COOLING:
+      if (!this->supports_cool_ ||
+          (this->mode != climate::CLIMATE_MODE_COOL && this->mode != climate::CLIMATE_MODE_HEAT_COOL &&
+           this->mode != climate::CLIMATE_MODE_AUTO) ||
+          !this->cooling_action_ready_()) {
+        return;
+      }
+      this->switch_to_action_(climate::CLIMATE_ACTION_COOLING, true);
+      break;
+
+    case climate::CLIMATE_ACTION_IDLE:
+      if (!this->idle_action_ready_()) {
+        return;
+      }
+      this->switch_to_action_(climate::CLIMATE_ACTION_IDLE, true);
+      break;
+
+    case climate::CLIMATE_ACTION_OFF:
+      if (!this->idle_action_ready_()) {
+        return;
+      }
+      this->switch_to_action_(climate::CLIMATE_ACTION_OFF, true);
+      break;
+
+    default:
+      break;
+  }
 }
 
 bool ThermostatClimate::climate_action_change_delayed() {

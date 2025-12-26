@@ -232,6 +232,9 @@ class ThermostatClimate : public climate::Climate, public Component {
   HumidificationAction humidification_action{THERMOSTAT_HUMIDITY_CONTROL_ACTION_NONE};
 
  protected:
+  bool is_temperature_in_comfort_zone() override;
+  void apply_requested_action_(climate::ClimateAction action) override;
+
   /// Override control to change settings of the climate device.
   void control(const climate::ClimateCall &call) override;
 
